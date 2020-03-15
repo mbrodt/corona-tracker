@@ -1,34 +1,65 @@
 <template>
-  <div class="hello">
-    <h1>{{ country }}</h1>
+  <div class="mx-auto flex flex-col">
+    <p class="uppercase text-gray-500 tracking-wide font-bold">
+      COVID-19 Coronavirus epidemi
+    </p>
+    <h1 class="text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-800">
+      Danmark - Nøgletal
+    </h1>
 
-    <div v-if="current.matches('success')">
-      Success!
-      <p>Confirmed: {{ context.countryData.confirmed }}</p>
-      <p>Recovered: {{ context.countryData.recovered }}</p>
-      <p>Deaths: {{ context.countryData.deaths }}</p>
-      <p>Date: {{ context.countryData.date }}</p>
+    <div class="mt-12" v-if="current.matches('success')">
+      <div>
+        <p>Senest opdateret:</p>
+        <p class="font-bold text-2xl text-gray-800 inline">
+          {{ context.countryData.date | formatDate }}
+        </p>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
+        <div
+          class="bg-white shadow-xl flex flex-col justify-center items-center h-32"
+        >
+          <p class="text-xl font-semibold text-gray-700">
+            Bekræftede tilfælde
+          </p>
+          <p class="text-3xl font-bold text-orange-600">
+            {{ context.countryData.confirmed }}
+          </p>
+        </div>
+        <div
+          class="bg-white shadow-xl flex flex-col justify-center items-center h-32"
+        >
+          <p class="text-xl font-semibold text-gray-700">Helbredt</p>
+          <p class="text-3xl font-bold text-green-700">
+            {{ context.countryData.recovered }}
+          </p>
+        </div>
+        <div
+          class="bg-white shadow-xl flex flex-col justify-center items-center h-32"
+        >
+          <p class="text-xl font-semibold text-gray-700">Døde</p>
+          <p class="text-3xl font-bold text-red-600">
+            {{ context.countryData.deaths }}
+          </p>
+        </div>
+      </div>
     </div>
     <div v-else-if="current.matches('failure')">
       Error!
       <p>{{ context.error }}</p>
-    </div>
-    <div v-if="!current.matches('success')">
-      <button @click="send('FETCH')">
-        {{ current.matches("loading") ? "Loading..." : "Get data" }}
-      </button>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
+import { TrinityRingsSpinner } from "epic-spinners";
 import { Machine } from "xstate";
 import { interpret, assign } from "xstate";
 
-const fetchData = (countryName: string) => {
+const fetchData = async (countryName: string) => {
   const baseUrl = "https://covid19.mathdro.id/api";
   const countryDataUrl = `${baseUrl}/countries/${countryName}`;
+
   const myFetch = fetch(countryDataUrl)
     .then(res => res.json())
     .catch(error => {
@@ -41,11 +72,9 @@ const countryMachine = Machine<any>(
   {
     id: "country",
     context: {
-      countryName: "denmark",
-      countryData: {},
-      error: ""
+      countryName: "Denmark"
     },
-    initial: "idle",
+    initial: "loading",
     states: {
       idle: {
         on: {
@@ -81,7 +110,6 @@ const countryMachine = Machine<any>(
     actions: {
       setResults: assign({
         countryData: (context, event) => {
-          console.log("RESOLVED");
           const countryData = {
             name: context.countryName,
             confirmed: event.data.confirmed.value,
@@ -94,7 +122,6 @@ const countryMachine = Machine<any>(
       }),
       setError: assign({
         error: (_, event) => {
-          console.log("FAILED!!!");
           return event.data.message;
         }
       })
@@ -104,9 +131,9 @@ const countryMachine = Machine<any>(
 
 export default Vue.extend({
   name: "CountryData",
-  props: {
-    country: String
-  },
+  // components: {
+  //   TrinityRingsSpinner
+  // },
   data() {
     return {
       fetchingService: interpret(countryMachine),
@@ -117,7 +144,27 @@ export default Vue.extend({
   methods: {
     send(event: any) {
       this.fetchingService.send(event);
-      console.log("state", this.current.value);
+    }
+  },
+  filters: {
+    formatDate(date) {
+      if (!date) {
+        return "";
+      }
+      const dateOptions = {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      };
+
+      const timeOptions = {
+        hour: "2-digit",
+        minute: "2-digit"
+      };
+
+      const day = date.toLocaleDateString("da-DK", dateOptions);
+      const time = date.toLocaleTimeString("da-DK", timeOptions);
+      return `${day} kl. ${time}`;
     }
   },
   created() {
@@ -125,48 +172,9 @@ export default Vue.extend({
     this.fetchingService
       .onTransition(state => {
         this.current = state;
-        state.context.countryName = this.country;
-        console.log("state context", state.context);
-
         this.context = state.context;
       })
       .start();
   }
-  // mounted() {
-  //   const baseUrl = "https://covid19.mathdro.id/api";
-  //   const countryDataUrl = `${baseUrl}/countries/${this.country}`;
-  //   setTimeout(() => {
-  //     fetch(countryDataUrl).then(res =>
-  //       res.json().then(data => {
-  //         const countryData = {
-  //           name: this.country,
-  //           confirmed: data.confirmed.value,
-  //           recovered: data.recovered.value,
-  //           deaths: data.deaths.value,
-  //           date: new Date(data.lastUpdate)
-  //         };
-  //         this.countryData = countryData;
-  //       })
-  //     );
-  //   }, 2000);
-  // }
 });
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
-</style>
