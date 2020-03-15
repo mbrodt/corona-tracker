@@ -3,7 +3,7 @@
     <h2 class="text-2xl font-semibold text-gray-800">Anbefalinger</h2>
     <p>
       Du bør altid følge myndighedernes anbefalinger, som du kan læse på
-      <a class="text-blue-600 underline" href="https://coronasmitte.dk"
+      <a class="text-blue-600 underline" href="http://www.coronasmitte.dk/"
         >coronasmitte.dk</a
       >. Det vigtigste, du som almindelig borger kan gøre, er at forebygge
       smitten så godt som muligt.
