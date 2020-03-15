@@ -5,11 +5,9 @@ Project Description
 ### Todo
 
 - [ ] Add a date filter / graph to show progress  
-- [ ] Link to coronasmitte.dk  
 
 ### In Progress
 
-- [ ] Install vuesax (or some other way for styling)  
 
 ### Done ✓
 
@@ -17,4 +15,6 @@ Project Description
 - [x] Get Denmark data onto the screen  
 - [x] Make country name dynamic  
 - [x] Implement state machine  
+- [x] Install tailwind and add basic styles  
+- [x] Link to coronasmitte.dk  
 
